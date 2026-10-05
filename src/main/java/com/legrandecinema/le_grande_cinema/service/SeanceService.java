@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface SeanceService {
 
-    //Attention, on ne veuxt ici récupérer les séances passées
+    //Attention, on ne veut ici récupérer les séances passées
     List<Seance> getSeancesByFilm(Integer idFilm);
 
     Optional<Seance> getSeanceById(Integer id);
