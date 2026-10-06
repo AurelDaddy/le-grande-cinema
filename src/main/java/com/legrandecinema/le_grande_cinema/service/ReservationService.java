@@ -7,7 +7,11 @@ import java.util.Optional;
 
 public interface ReservationService {
 
-    Reservation createReservation(Reservation reservation);
+    Reservation createReservation(
+            Integer idUtilisateur,
+            Integer idSeance,
+            int nombrePlaces
+    );
 
     Optional<Reservation> getReservationById(Integer id);
 
