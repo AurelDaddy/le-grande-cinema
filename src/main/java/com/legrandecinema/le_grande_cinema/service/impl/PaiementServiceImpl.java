@@ -36,9 +36,7 @@ public class PaiementServiceImpl implements PaiementService {
            reservation.setStatut(StatutReservation.CONFIRMEE);
            reservationRepository.save(reservation);
         }
-
         return paiementEnregistre;
-
     }
 
     @Override
