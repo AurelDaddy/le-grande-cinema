@@ -20,7 +20,8 @@ public class FrequentationServiceImpl implements FrequentationService {
     public double getTauxDeRemplissage(Integer idSeance) {
        long nombrePlacesTotal = placeSeanceRepository.countBySeanceIdSeance(idSeance);
 
-       //au cas où il n'y a aucune placeSeance en base
+        //au cas où il n'y a aucune placeSeance en base et éviter
+        // de crasher en faisant une division par zéro ensuite
         if (nombrePlacesTotal == 0) {
             return 0.0;
         }
