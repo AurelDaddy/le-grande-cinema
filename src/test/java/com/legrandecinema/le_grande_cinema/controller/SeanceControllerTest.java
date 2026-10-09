@@ -1,5 +1,7 @@
 package com.legrandecinema.le_grande_cinema.controller;
 
+import com.legrandecinema.le_grande_cinema.model.Film;
+import com.legrandecinema.le_grande_cinema.model.Salle;
 import com.legrandecinema.le_grande_cinema.model.Seance;
 import com.legrandecinema.le_grande_cinema.service.SeanceService;
 import org.junit.jupiter.api.Test;
@@ -7,6 +9,7 @@ import org.mockito.Mockito;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,8 +28,25 @@ public class SeanceControllerTest {
 
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(seanceController).build();
 
+        Salle salle =  new Salle();
+        salle.setIdSalle(1);
+
+        Film film = new Film();
+        film.setIdFilm(1);
+
         Seance seance1 = new Seance();
+        seance1.setVersion("VF");
+        seance1.setIdSeance(1);
+        seance1.setFilm(film);
+        seance1.setSalle(salle);
+        seance1.setDateHeure(LocalDateTime.now().plusDays(1));
+
         Seance seance2 = new Seance();
+        seance2.setVersion("VF");
+        seance2.setIdSeance(1);
+        seance2.setFilm(film);
+        seance2.setSalle(salle);
+        seance2.setDateHeure(LocalDateTime.now().plusDays(2));
 
         List<Seance> seancesFilm = List.of(seance1,seance2);
 
@@ -51,8 +71,18 @@ public class SeanceControllerTest {
 
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(seanceController).build();
 
+        Salle salle =  new Salle();
+        salle.setIdSalle(1);
+
+        Film film = new Film();
+        film.setIdFilm(1);
+
         Seance seance = new Seance();
         seance.setVersion("VF");
+        seance.setIdSeance(1);
+        seance.setFilm(film);
+        seance.setSalle(salle);
+        seance.setDateHeure(LocalDateTime.now().plusDays(1));
 
         Mockito.when(seanceService.getSeanceById(1))
                 .thenReturn(Optional.of(seance));
