@@ -1,5 +1,7 @@
 package com.legrandecinema.le_grande_cinema.controller;
 
+import com.legrandecinema.le_grande_cinema.dto.FilmDto;
+import com.legrandecinema.le_grande_cinema.mapper.FilmMapper;
 import com.legrandecinema.le_grande_cinema.model.Film;
 import com.legrandecinema.le_grande_cinema.service.FilmService;
 import org.springframework.http.ResponseEntity;
@@ -21,13 +23,17 @@ public class FilmController {
     }
 
     @GetMapping
-    public List<Film> getFilmsAlAffiche() {
-        return filmService.getFilmsALAffiche();
+    public List<FilmDto> getFilmsAlAffiche() {
+        return filmService.getFilmsALAffiche()
+                .stream()
+                .map(FilmMapper::toDto)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Film> getFilmById(@PathVariable Integer id) {
+    public ResponseEntity<FilmDto> getFilmById(@PathVariable Integer id) {
         return filmService.getFilmById(id)
+                .map(FilmMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
