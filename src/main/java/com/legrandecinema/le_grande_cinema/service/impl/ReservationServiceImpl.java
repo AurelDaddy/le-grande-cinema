@@ -40,7 +40,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     @Override
     public Reservation createReservation(
-            Integer idUtilisateur,
+            String email,
             Integer idSeance,
             int nombrePlaces) {
 
@@ -52,17 +52,24 @@ public class ReservationServiceImpl implements ReservationService {
         //Récupération de l'utilisateur, de la séance et du nombre de place à réserver
         //disponible dans placeSeance
         Utilisateur utilisateur = utilisateurRepository
-                .findById(idUtilisateur)
+                .findByEmail(email)
                 .orElseThrow();
 
         Seance seance = seanceRepository
                 .findById(idSeance)
                 .orElseThrow();
 
+        //verifier que la résservation ne se fasse pas sur une séance passée
+        if (seance.getDateHeure().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("La séance est passée. Elle n'est donc plus réservable");
+        }
+
+        //vérifie que qu'il reste des placesSeances avec Reservation Null donc des places disponibles pour la Séance
         List<PlaceSeance> placesAReserver = placeSeanceRepository.findBySeanceIdSeanceAndReservationIsNull(
                 idSeance,
                 PageRequest.of(0, nombrePlaces));
 
+        //vérifie qu'il y ait assez de places disponibles
         if (placesAReserver.size() <  nombrePlaces ){
             throw new IllegalStateException("Désolé il n'y pas assez de places disponibles");
         }

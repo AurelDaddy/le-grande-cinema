@@ -1,12 +1,17 @@
 package com.legrandecinema.le_grande_cinema.controller;
 
 import com.legrandecinema.le_grande_cinema.model.Film;
+import com.legrandecinema.le_grande_cinema.model.PlaceSeance;
+import com.legrandecinema.le_grande_cinema.service.PlaceSeanceService;
 import com.legrandecinema.le_grande_cinema.model.Salle;
 import com.legrandecinema.le_grande_cinema.model.Seance;
+import com.legrandecinema.le_grande_cinema.service.PlaceSeanceService;
 import com.legrandecinema.le_grande_cinema.service.SeanceService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
@@ -24,7 +29,9 @@ public class SeanceControllerTest {
 
         SeanceService seanceService = Mockito.mock(SeanceService.class);
 
-        SeanceController seanceController = new SeanceController(seanceService);
+        PlaceSeanceService placeSeanceService = Mockito.mock(PlaceSeanceService.class);
+
+        SeanceController seanceController = new SeanceController(seanceService,  placeSeanceService);
 
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(seanceController).build();
 
@@ -67,7 +74,9 @@ public class SeanceControllerTest {
     void shouldReturnSeanceWhenSeanceExists() throws Exception {
         SeanceService seanceService = Mockito.mock(SeanceService.class);
 
-        SeanceController seanceController = new SeanceController(seanceService);
+        PlaceSeanceService placeSeanceService = Mockito.mock(PlaceSeanceService.class);
+
+        SeanceController seanceController = new SeanceController(seanceService,   placeSeanceService);
 
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(seanceController).build();
 
@@ -99,7 +108,11 @@ public class SeanceControllerTest {
     @Test
     void shouldReturnErrorWhenSeanceDoesNotExist() throws Exception {
         SeanceService seanceService = Mockito.mock(SeanceService.class);
-        SeanceController seanceController = new SeanceController(seanceService);
+
+        PlaceSeanceService placeSeanceService = Mockito.mock(PlaceSeanceService.class);
+
+        SeanceController seanceController = new SeanceController(seanceService,  placeSeanceService);
+
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(seanceController).build();
 
         Mockito.when(seanceService.getSeanceById(1))
@@ -111,5 +124,41 @@ public class SeanceControllerTest {
                 .andExpect(status().isNotFound());
 
         Mockito.verify(seanceService).getSeanceById(1);
+    }
+
+    @Test
+    void shouldReturnNombrePlacesDisponibles() throws Exception {
+
+        SeanceService seanceService =
+                Mockito.mock(SeanceService.class);
+
+        PlaceSeanceService placeSeanceService =
+                Mockito.mock(PlaceSeanceService.class);
+
+        SeanceController seanceController =
+                new SeanceController(
+                        seanceService,
+                        placeSeanceService
+                );
+
+        MockMvc mockMvc = MockMvcBuilders
+                .standaloneSetup(seanceController)
+                .build();
+
+        Mockito.when(
+                placeSeanceService.getNombrePlacesDisponibles(1)
+        ).thenReturn(42L);
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get(
+                                "/api/seances/1/places-disponibles"
+                        )
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string("42"));
+
+        Mockito.verify(
+                placeSeanceService
+        ).getNombrePlacesDisponibles(1);
     }
 }
