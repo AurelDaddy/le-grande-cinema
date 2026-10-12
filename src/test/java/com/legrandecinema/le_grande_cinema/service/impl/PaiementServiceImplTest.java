@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -30,24 +31,35 @@ public class PaiementServiceImplTest {
                 reservationRepository,
                 paymentGateway);
 
-        //On créé une réservation
+        //On crée une réservation
         Reservation reservation = new Reservation();
+        reservation.setIdReservation(1);
         reservation.setStatut(StatutReservation.EN_ATTENTE);
 
-        //On créé un paiement
-        Paiement paiement = new Paiement();
-        paiement.setMontant(new BigDecimal("10.00"));
-        paiement.setReservation(reservation);
+        BigDecimal montant = new BigDecimal("20.00");
+
+        Mockito.when(reservationRepository.findById(1))
+                .thenReturn(Optional.of(reservation));
+
 
         //On mock le paymentGateway on retournant le statut ACCEPTE
         Mockito.when(
-                paymentGateway.payer(paiement.getMontant())
+                paymentGateway.payer(montant)
                 ).thenReturn(StatutPaiement.ACCEPTE);
 
+        Mockito.when(
+                paiementRepository.save(Mockito.any(Paiement.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
         //On déclenche le paiement
-        paiementService.effectuerPaiement(paiement);
+        Paiement paiement = paiementService.effectuerPaiement(1,
+                montant
+        );
         //On test que le statut de la réservation a bien changé
         assertEquals(StatutReservation.CONFIRMEE, reservation.getStatut());
+        assertEquals(StatutPaiement.ACCEPTE, paiement.getStatut());
+        assertEquals(montant, paiement.getMontant());
+        assertEquals(reservation,  paiement.getReservation());
 
         //On vérifie que PaiementServiceImpl a bien appelé paiementRepository.save
         //et reservationRepository.save
@@ -69,25 +81,34 @@ public class PaiementServiceImplTest {
                 reservationRepository,
                 paymentGateway);
 
-        //On créé une réservation
+
+        //On crée une réservation
         Reservation reservation = new Reservation();
+        reservation.setIdReservation(1);
         reservation.setStatut(StatutReservation.EN_ATTENTE);
 
-        //On créé un paiement
-        Paiement paiement = new Paiement();
-        paiement.setMontant(new BigDecimal("10.00"));
-        paiement.setReservation(reservation);
+        BigDecimal montant = new BigDecimal("20.00");
+
+        Mockito.when(reservationRepository.findById(1))
+                .thenReturn(Optional.of(reservation));
+
+
 
         //On mock le paymentGateway on retournant le statut REFUSE
         Mockito.when(
-                paymentGateway.payer(paiement.getMontant())
+                paymentGateway.payer(montant)
         ).thenReturn(StatutPaiement.REFUSE);
 
+        Mockito.when(paiementRepository.save(Mockito.any(Paiement.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
         //On déclenche le paiement
-        paiementService.effectuerPaiement(paiement);
+        Paiement paiement = paiementService.effectuerPaiement(1,montant);
+
         //On test que le statut de la réservation est toujours en attente
-        // car le paiement n'est pas passé
+        //et que le paiement a bien été refusé
         assertEquals(StatutReservation.EN_ATTENTE, reservation.getStatut());
+        assertEquals(StatutPaiement.REFUSE, paiement.getStatut());
 
         //On vérifie que PaiementServiceImpl appelle paiementRepository.save
         //mais pas reservationRepository.save

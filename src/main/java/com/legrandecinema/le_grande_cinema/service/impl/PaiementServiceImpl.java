@@ -11,6 +11,8 @@ import com.legrandecinema.le_grande_cinema.service.PaiementService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -30,16 +32,22 @@ public class PaiementServiceImpl implements PaiementService {
 
     @Override
     @Transactional //Sauvegarde du paiement et mise à jour de la réservation dans une même transaction
-    public Paiement effectuerPaiement(Paiement paiement) {
+    public Paiement effectuerPaiement(Integer idReservation, BigDecimal montant) {
 
-        StatutPaiement statutPaiement = paymentGateway.payer(paiement.getMontant());
+        Reservation reservation = reservationRepository.findById(idReservation).orElseThrow();
+
+        Paiement paiement = new Paiement();
+
+        paiement.setReservation(reservation);
+        paiement.setMontant(montant);
+        paiement.setDatePaiement(LocalDateTime.now());
+
+        StatutPaiement statutPaiement = paymentGateway.payer(montant);
         paiement.setStatut(statutPaiement);
         Paiement paiementEnregistre = paiementRepository.save(paiement);
 
-        //Si le statut du paiement est accepté alors on récupère la réservation
-        //du paiement et on change son statut en CONFIRMEE puis on enregistre
+        //Si le statut du paiement est accepté alors on confirme la réservation
         if (statutPaiement == StatutPaiement.ACCEPTE){
-           Reservation reservation = paiement.getReservation();
            reservation.setStatut(StatutReservation.CONFIRMEE);
            reservationRepository.save(reservation);
         }
