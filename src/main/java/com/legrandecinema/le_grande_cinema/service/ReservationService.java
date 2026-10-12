@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface ReservationService {
 
     Reservation createReservation(
-            Integer idUtilisateur,
+            String email,
             Integer idSeance,
             int nombrePlaces
     );

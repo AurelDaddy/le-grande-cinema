@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,6 +46,7 @@ public class ReservationServiceImplTest {
 
         //On crée une séance
         Seance seance = new Seance();
+        seance.setDateHeure(LocalDateTime.now().plusDays(1));
 
         //On crée 2 placesSéance auxquelles on affecte la même séance
         PlaceSeance placeSeance1 = new PlaceSeance();
@@ -54,10 +56,10 @@ public class ReservationServiceImplTest {
 
         List<PlaceSeance> placesDisponibles = List.of(placeSeance1, placeSeance2);
 
-        Mockito.when(utilisateurRepository.findById(1) // 1 -> id fictif de l'utilisateur nouvellement créé
+        Mockito.when(utilisateurRepository.findByEmail("test@test.fr")
         ).thenReturn(Optional.of(utilisateur));
 
-        Mockito.when(seanceRepository.findById(1) // 1 id fictif de la séance nouvellement créée
+        Mockito.when(seanceRepository.findById(1) // 1 id fictif de la séance nouvellement créée (mockée)
         ).thenReturn(Optional.of(seance));
 
         Mockito.when(
@@ -71,7 +73,7 @@ public class ReservationServiceImplTest {
                 reservationRepository.save(Mockito.any(Reservation.class))
         ).thenAnswer(invocation -> invocation.getArgument(0)); //thenAnswer car on simule un save qui retourne l’entité qu’on vient de lui passer.
 
-        Reservation reservationTest = reservationService.createReservation(1, 1, 2);
+        Reservation reservationTest = reservationService.createReservation("test@test.fr", 1, 2);
 
         assertEquals(
                 StatutReservation.EN_ATTENTE,
@@ -89,8 +91,6 @@ public class ReservationServiceImplTest {
         );
 
         //vérification que les PlaceSeance modifiées sont bien sauvegardées
-        Mockito.verify(placeSeanceRepository).saveAll(placesDisponibles);
-
         Mockito.verify(placeSeanceRepository).saveAll(placesDisponibles);
 
     }
@@ -116,6 +116,7 @@ public class ReservationServiceImplTest {
 
         Utilisateur utilisateur = new Utilisateur();
         Seance seance = new Seance();
+        seance.setDateHeure(LocalDateTime.now().plusDays(1));
 
         //On crée 2 placesSéance auxquelles on affecte la même séance
         PlaceSeance placeSeance1 = new PlaceSeance();
@@ -125,7 +126,7 @@ public class ReservationServiceImplTest {
 
         List<PlaceSeance> placesDisponibles = List.of(placeSeance1, placeSeance2);
 
-        Mockito.when(utilisateurRepository.findById(1) // 1 -> id fictif de l'utilisateur nouvellement créé
+        Mockito.when(utilisateurRepository.findByEmail("test@test.fr")
         ).thenReturn(Optional.of(utilisateur));
 
         Mockito.when(seanceRepository.findById(1) // 1 id fictif de la séance nouvellement créée
@@ -140,7 +141,7 @@ public class ReservationServiceImplTest {
 
         //on vérifie que quand reservationService.createReservation est lancé, il envoie une exception car pas assez de places disponibles
         assertThrows(
-                IllegalStateException.class, () -> reservationService.createReservation(1, 1, 3)
+                IllegalStateException.class, () -> reservationService.createReservation("test@test.fr", 1, 3)
         );
 
         //on vérifie que reservationRepository ne save pas la reservation
@@ -173,7 +174,7 @@ public class ReservationServiceImplTest {
 
         //on vérifie que quand reservationService.createReservation est lancé, il envoie une exception car aucune place n'est demandée
         assertThrows(
-                IllegalArgumentException.class, () -> reservationService.createReservation(1, 1, 0)
+                IllegalArgumentException.class, () -> reservationService.createReservation("test@test.fr", 1, 0)
         );
 
         Mockito.verifyNoInteractions(
@@ -181,6 +182,45 @@ public class ReservationServiceImplTest {
                 seanceRepository,
                 utilisateurRepository,
                 placeSeanceRepository);
+
+    }
+
+    @Test
+    void shouldThrowExceptionWhenSeanceIsPassed() {
+
+        ReservationRepository reservationRepository = Mockito.mock(ReservationRepository.class);
+
+        SeanceRepository seanceRepository = Mockito.mock(SeanceRepository.class);
+
+        UtilisateurRepository utilisateurRepository = Mockito.mock(UtilisateurRepository.class);
+
+        PlaceSeanceRepository placeSeanceRepository = Mockito.mock(PlaceSeanceRepository.class);
+
+
+        ReservationServiceImpl reservationService = new ReservationServiceImpl(
+                reservationRepository,
+                seanceRepository,
+                utilisateurRepository,
+                placeSeanceRepository);
+
+        Utilisateur utilisateur = new Utilisateur();
+        Seance seancePassee = new Seance();
+        seancePassee.setDateHeure(LocalDateTime.now().minusDays(1));
+
+        Mockito.when(utilisateurRepository.findByEmail("test@test.fr"))
+                        .thenReturn(Optional.of(utilisateur));
+
+        Mockito.when(seanceRepository.findById(1)
+        ).thenReturn(Optional.of(seancePassee));
+
+        //on vérifie que quand reservationService.createReservation est lancé, il envoie une exception car la séance est passée
+        assertThrows(
+                IllegalStateException.class, () -> reservationService.createReservation("test@test.fr", 1, 1)
+        );
+
+        //on vérifie que reservationRepository ne save pas la reservation
+        Mockito.verify(
+                reservationRepository, Mockito.never()).save(Mockito.any(Reservation.class));
 
     }
 }
