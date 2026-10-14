@@ -104,4 +104,9 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationRepository.findByStatut(StatutReservation.CONFIRMEE);
     }
 
+    @Override
+    public List<Reservation> getReservationsBySeance(Integer idSeance) {
+        return reservationRepository.findBySeanceIdSeance(idSeance);
+    }
+
 }
