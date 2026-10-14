@@ -16,4 +16,6 @@ public interface ReservationService {
     Optional<Reservation> getReservationById(Integer id);
 
     List<Reservation> getReservationsConfirmees();
+
+    List<Reservation> getReservationsBySeance(Integer idSeance);
 }
