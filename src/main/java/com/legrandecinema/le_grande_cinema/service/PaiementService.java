@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface PaiementService {
 
-    Paiement effectuerPaiement(Integer idReservation, BigDecimal montant);
+    Paiement effectuerPaiement(String email, Integer idReservation);
 
     List<Paiement> getPaiementsByReservation(Integer idReservation);
 }

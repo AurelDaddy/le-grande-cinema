@@ -32,9 +32,24 @@ public class PaiementServiceImpl implements PaiementService {
 
     @Override
     @Transactional //Sauvegarde du paiement et mise à jour de la réservation dans une même transaction
-    public Paiement effectuerPaiement(Integer idReservation, BigDecimal montant) {
+    public Paiement effectuerPaiement(String email, Integer idReservation) {
 
         Reservation reservation = reservationRepository.findById(idReservation).orElseThrow();
+
+        if(!reservation.getUtilisateur().getEmail().equals(email)){
+            throw new IllegalStateException(
+                    "L'email fourni n'est pas le même que celui de la réservation"
+            );
+        }
+
+        //ici on récupère le nombre de places désirées à partir de la réservation
+        int nombrePlaces = reservation.getPlaceSeances().size();
+
+        //qu'on multiplie par le prix de la séance
+        BigDecimal montant = reservation
+                .getSeance()
+                .getPrix()
+                .multiply(BigDecimal.valueOf(nombrePlaces));
 
         Paiement paiement = new Paiement();
 
