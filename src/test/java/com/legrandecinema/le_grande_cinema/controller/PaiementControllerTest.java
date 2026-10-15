@@ -7,6 +7,7 @@ import com.legrandecinema.le_grande_cinema.model.type.StatutPaiement;
 import com.legrandecinema.le_grande_cinema.service.PaiementService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import tools.jackson.databind.ObjectMapper;
@@ -43,16 +44,23 @@ public class PaiementControllerTest {
         paiement.setReservation(reservation);
 
 
-        Mockito.when(paiementService.effectuerPaiement(2, new BigDecimal("20")))
+        Mockito.when(paiementService.effectuerPaiement("michel.dumont@test.fr",2))
                 .thenReturn(paiement);
 
         CreatePaiementRequest request =
-                new CreatePaiementRequest(2, new BigDecimal("20"));
+                new CreatePaiementRequest(2);
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        "michel.dumont@test.fr",
+                        null
+                );
 
 
         mockMvc.perform(
                 post("/api/paiements")
                         .contentType("application/json")
+                        .principal(authentication)
                         .content(objectMapper.writeValueAsString(request))
         )
                 .andExpect(status().isOk())
@@ -63,6 +71,6 @@ public class PaiementControllerTest {
 
 
         Mockito.verify(paiementService)
-                .effectuerPaiement(2, new BigDecimal("20"));
+                .effectuerPaiement("michel.dumont@test.fr",2);
     }
 }
