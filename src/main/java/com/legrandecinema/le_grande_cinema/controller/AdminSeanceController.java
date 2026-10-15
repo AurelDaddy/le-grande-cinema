@@ -2,6 +2,7 @@ package com.legrandecinema.le_grande_cinema.controller;
 
 import com.legrandecinema.le_grande_cinema.dto.CreateSeanceRequest;
 import com.legrandecinema.le_grande_cinema.dto.SeanceDto;
+import com.legrandecinema.le_grande_cinema.exception.RessourceIntrouvableException;
 import com.legrandecinema.le_grande_cinema.mapper.SeanceMapper;
 import com.legrandecinema.le_grande_cinema.model.Film;
 import com.legrandecinema.le_grande_cinema.model.Salle;
@@ -37,11 +38,18 @@ public class AdminSeanceController {
 
         Salle salle = salleService
                 .getSalleById(request.idSalle())
-                .orElseThrow();
+                .orElseThrow(() ->
+                        new RessourceIntrouvableException(
+                                "Salle introuvable"
+                        ));
 
         Film film = filmService
                 .getFilmById(request.idFilm())
-                .orElseThrow();
+                .orElseThrow(() ->
+                        new RessourceIntrouvableException(
+                                "Film introuvable"
+                        )
+                );
 
         //on crée la séance
         Seance seance = new Seance();
