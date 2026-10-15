@@ -1,5 +1,6 @@
 package com.legrandecinema.le_grande_cinema.service.impl;
 
+import com.legrandecinema.le_grande_cinema.exception.RessourceIntrouvableException;
 import com.legrandecinema.le_grande_cinema.model.Paiement;
 import com.legrandecinema.le_grande_cinema.model.Reservation;
 import com.legrandecinema.le_grande_cinema.model.type.StatutPaiement;
@@ -34,7 +35,12 @@ public class PaiementServiceImpl implements PaiementService {
     @Transactional //Sauvegarde du paiement et mise à jour de la réservation dans une même transaction
     public Paiement effectuerPaiement(String email, Integer idReservation) {
 
-        Reservation reservation = reservationRepository.findById(idReservation).orElseThrow();
+        Reservation reservation = reservationRepository
+                .findById(idReservation)
+                .orElseThrow(() ->
+                        new RessourceIntrouvableException(
+                                "Réservation introuvable"
+                        ));
 
         if(!reservation.getUtilisateur().getEmail().equals(email)){
             throw new IllegalStateException(

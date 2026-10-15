@@ -1,5 +1,6 @@
 package com.legrandecinema.le_grande_cinema.service.impl;
 
+import com.legrandecinema.le_grande_cinema.exception.RessourceIntrouvableException;
 import com.legrandecinema.le_grande_cinema.model.PlaceSeance;
 import com.legrandecinema.le_grande_cinema.model.Reservation;
 import com.legrandecinema.le_grande_cinema.model.Seance;
@@ -53,11 +54,19 @@ public class ReservationServiceImpl implements ReservationService {
         //disponible dans placeSeance
         Utilisateur utilisateur = utilisateurRepository
                 .findByEmail(email)
-                .orElseThrow();
+                .orElseThrow(() ->
+                        new RessourceIntrouvableException(
+                                "Utilisateurs introuvable"
+                        )
+                );
 
         Seance seance = seanceRepository
                 .findById(idSeance)
-                .orElseThrow();
+                .orElseThrow(() ->
+                        new RessourceIntrouvableException(
+                                "Séance introuvable"
+                        )
+                );
 
         //verifier que la résservation ne se fasse pas sur une séance passée
         if (seance.getDateHeure().isBefore(LocalDateTime.now())) {

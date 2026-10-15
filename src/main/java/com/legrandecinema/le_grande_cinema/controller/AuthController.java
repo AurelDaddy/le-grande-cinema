@@ -2,6 +2,7 @@ package com.legrandecinema.le_grande_cinema.controller;
 
 import com.legrandecinema.le_grande_cinema.dto.CreateRegisterRequest;
 import com.legrandecinema.le_grande_cinema.dto.UtilisateurDto;
+import com.legrandecinema.le_grande_cinema.exception.RessourceIntrouvableException;
 import com.legrandecinema.le_grande_cinema.mapper.UtilisateurMapper;
 import com.legrandecinema.le_grande_cinema.model.Utilisateur;
 import com.legrandecinema.le_grande_cinema.service.UtilisateurService;
@@ -42,7 +43,10 @@ public class AuthController {
 
         Utilisateur utilisateur = utilisateurService
                 .getUtilisateurByEmail(email)
-                .orElseThrow();
+                .orElseThrow(() ->
+                        new RessourceIntrouvableException(
+                                "Utilisateur introuvable"
+                        ));
 
         UtilisateurDto utilisateurDto = UtilisateurMapper.toDto(utilisateur);
 
