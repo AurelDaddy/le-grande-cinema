@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class PaiementServiceImpl implements PaiementService {
@@ -48,6 +49,18 @@ public class PaiementServiceImpl implements PaiementService {
             );
         }
 
+        if (reservation.getStatut() == StatutReservation.CONFIRMEE) {
+            throw new IllegalStateException(
+                    "Cette réservation a déjà été payée"
+            );
+        }
+
+        if (reservation.getStatut() == StatutReservation.ANNULEE) {
+            throw new IllegalStateException(
+                    "Cette réservation a été annulée"
+            );
+        }
+
         //ici on récupère le nombre de places désirées à partir de la réservation
         int nombrePlaces = reservation.getPlaceSeances().size();
 
@@ -62,6 +75,15 @@ public class PaiementServiceImpl implements PaiementService {
         paiement.setReservation(reservation);
         paiement.setMontant(montant);
         paiement.setDatePaiement(LocalDateTime.now());
+
+        //génération de referencePaiement
+        String referencePaiement =
+                "CINE" +
+                        UUID.randomUUID()
+                                .toString()
+                                .substring(0, 8)
+                                .toUpperCase();
+        paiement.setReferencePaiement(referencePaiement);
 
         StatutPaiement statutPaiement = paymentGateway.payer(montant);
         paiement.setStatut(statutPaiement);
@@ -78,6 +100,32 @@ public class PaiementServiceImpl implements PaiementService {
     @Override
     public List<Paiement> getPaiementsByReservation(Integer idReservation) {
         return paiementRepository.findAllByReservationIdReservation(idReservation);
+    }
+
+    @Override
+    public Paiement getPaiementById(
+            String email,
+            int idPaiement
+    ) {
+
+        Paiement paiement = paiementRepository
+                .findById(idPaiement)
+                .orElseThrow(() ->
+                        new RessourceIntrouvableException(
+                                "Paiement introuvable"
+                        )
+                );
+
+        if (!paiement
+                .getReservation()
+                .getUtilisateur()
+                .getEmail()
+                .equals(email)) {
+            throw new IllegalStateException(
+                    "Ce paiement n'appartient pas à l'utilisateur connecté"
+            );
+        }
+        return paiement;
     }
 
 }

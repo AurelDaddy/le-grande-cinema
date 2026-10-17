@@ -7,10 +7,7 @@ import com.legrandecinema.le_grande_cinema.model.Paiement;
 import com.legrandecinema.le_grande_cinema.service.PaiementService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/paiements")
@@ -33,6 +30,20 @@ public class PaiementController {
                 email,
                 request.idReservation()
         );
+
+        PaiementDto paiementDto = PaiementMapper.toDto(paiement);
+
+        return ResponseEntity.ok(paiementDto);
+    }
+
+    //avec authenticate afin d'éviter qu'un utilisateur accède au paiement d'un autre
+    @GetMapping("/{idPaiement}")
+    public ResponseEntity<PaiementDto> getPaiementById(@PathVariable int idPaiement,
+                                                       Authentication authentication) {
+
+        String email = authentication.getName();
+
+        Paiement paiement = paiementService.getPaiementById(email, idPaiement);
 
         PaiementDto paiementDto = PaiementMapper.toDto(paiement);
 
