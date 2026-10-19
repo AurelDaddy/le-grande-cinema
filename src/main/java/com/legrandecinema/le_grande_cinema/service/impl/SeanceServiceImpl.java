@@ -87,7 +87,10 @@ public class SeanceServiceImpl implements SeanceService {
                     "Impossible de supprimer une séance avec des réservations"
             );
         }
+        placeSeanceRepository.deleteBySeanceIdSeance(id);
+
         seanceRepository.deleteById(id);
+
 
     }
 }
