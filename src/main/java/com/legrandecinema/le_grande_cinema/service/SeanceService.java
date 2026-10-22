@@ -16,4 +16,5 @@ public interface SeanceService {
 
     void deleteSeance(Integer id);
 
+    List<Seance> getAllSeances();
 }

@@ -90,7 +90,10 @@ public class SeanceServiceImpl implements SeanceService {
         placeSeanceRepository.deleteBySeanceIdSeance(id);
 
         seanceRepository.deleteById(id);
+    }
 
-
+    @Override
+    public List<Seance> getAllSeances() {
+        return seanceRepository.findAll();
     }
 }
