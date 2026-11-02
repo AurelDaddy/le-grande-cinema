@@ -29,10 +29,23 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+
+                        // API publique
                         .requestMatchers("/api/films/**").permitAll()
                         .requestMatchers("/api/seances/**").permitAll()
                         .requestMatchers("/api/auth/inscription").permitAll()
+
+                        // Administration
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // Documentation Swagger / OpenAPI
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/swagger-ui.html").permitAll()
+                        .requestMatchers("/v3/api-docs").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/webjars/**").permitAll()
+
+                        // Toutes les routes nécessitent une authentification
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());

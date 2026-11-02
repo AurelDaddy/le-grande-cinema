@@ -75,6 +75,7 @@ public class SeanceServiceImpl implements SeanceService {
         return seanceEnregistree;
     }
 
+    @Transactional
     @Override
     public void deleteSeance(Integer id) {
 
