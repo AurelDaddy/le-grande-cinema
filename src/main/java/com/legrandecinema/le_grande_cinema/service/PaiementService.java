@@ -10,4 +10,6 @@ public interface PaiementService {
     Paiement effectuerPaiement(String email, Integer idReservation);
 
     List<Paiement> getPaiementsByReservation(Integer idReservation);
+
+    Paiement getPaiementById(String email, int idPaiement);
 }

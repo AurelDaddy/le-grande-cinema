@@ -13,4 +13,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
     Boolean existsBySeanceIdSeance(Integer idSeance); //existsBy car pas besoin de charger toutes les réservations en mémoire, on veut juste une réponse true or false
 
     List<Reservation> findBySeanceIdSeance(Integer idSeance);
+
+    List<Reservation> findByUtilisateurEmailAndStatut(String email, StatutReservation statut);
+
 }

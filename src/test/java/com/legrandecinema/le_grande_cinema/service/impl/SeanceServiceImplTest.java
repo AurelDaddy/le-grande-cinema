@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class SeanceServiceImplTest {
 
@@ -51,7 +52,7 @@ public class SeanceServiceImplTest {
 
         List<Seance> prochainesSeance = List.of(seance1,seance2);
 
-        Mockito.when(
+        when(
                 seanceRepository.findByFilmIdFilmAndDateHeureAfter(
                         Mockito.eq(1),
                         Mockito.any(LocalDateTime.class)
@@ -63,7 +64,7 @@ public class SeanceServiceImplTest {
 
         assertEquals(prochainesSeance, seancesDunFilm);
 
-        Mockito.verify(seanceRepository)
+        verify(seanceRepository)
                 .findByFilmIdFilmAndDateHeureAfter(
                         Mockito.eq(1),
                         Mockito.any(LocalDateTime.class)
@@ -85,10 +86,10 @@ public class SeanceServiceImplTest {
 
         List<Place> places = List.of(place1,place2,place3);
 
-        Mockito.when(seanceRepository.save(seance))
+        when(seanceRepository.save(seance))
                 .thenReturn(seance);
 
-        Mockito.when(placeRepository.findBySalleIdSalle(1))
+        when(placeRepository.findBySalleIdSalle(1))
                 .thenReturn(places);
 
         seanceService.createSeance(seance);
@@ -97,7 +98,7 @@ public class SeanceServiceImplTest {
         ArgumentCaptor<List<PlaceSeance>> captor = ArgumentCaptor.forClass(List.class);
 
         //on vérifie que saveAll a bien été appelé par placeSeanceRepository et on capture l'argument qui lui été passé. Ici la List<PlaceSeance>
-        Mockito.verify(placeSeanceRepository).saveAll(captor.capture());
+        verify(placeSeanceRepository).saveAll(captor.capture());
 
         //on récupère la liste et on l'inspecte
         List<PlaceSeance> placesSeanceSauvegardees = captor.getValue();
@@ -124,19 +125,19 @@ public class SeanceServiceImplTest {
 
     @Test
     void shouldDeleteSeanceWhenNoReservationExists(){
-        Mockito.when(
+        when(
                 reservationRepository.existsBySeanceIdSeance(10))
                 .thenReturn(Boolean.FALSE);
 
         seanceService.deleteSeance(10);
 
-        Mockito.verify(seanceRepository).deleteById(10);
+        verify(seanceRepository).deleteById(10);
     }
 
     @Test
     void shouldNotDeleteSeanceWhenReservationExists(){
 
-        Mockito.when(
+        when(
                 reservationRepository.existsBySeanceIdSeance(10))
                 .thenReturn(Boolean.TRUE);
 
@@ -145,7 +146,47 @@ public class SeanceServiceImplTest {
                 () -> seanceService.deleteSeance(10)
         );
 
-        Mockito.verify(reservationRepository, Mockito.never())
+        verify(reservationRepository, never())
                 .deleteById(10);
+    }
+
+    @Test
+    void shouldDeleteSeanceSansReservation() {
+
+        when(reservationRepository.existsBySeanceIdSeance(1))
+                .thenReturn(false);
+
+        seanceService.deleteSeance(1);
+
+        verify(placeSeanceRepository)
+                .deleteBySeanceIdSeance(1);
+
+        verify(seanceRepository)
+                .deleteById(1);
+    }
+
+    @Test
+    void shouldRefuseSuppressionSeanceAvecReservation() {
+
+        when(
+                reservationRepository.existsBySeanceIdSeance(1)
+        ).thenReturn(true);
+
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> seanceService.deleteSeance(1)
+                );
+
+        assertEquals(
+                "Impossible de supprimer une séance avec des réservations",
+                exception.getMessage()
+        );
+
+        verify(placeSeanceRepository, never())
+                .deleteBySeanceIdSeance(1);
+
+        verify(seanceRepository, never())
+                .deleteById(1);
     }
 }

@@ -10,7 +10,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -83,5 +86,54 @@ public class AdminFilmControllerTest {
                 "https://example.com/interstellar.jpg",
                 filmCree.getUrlAffiche()
         );
+    }
+    @Test
+    void shouldReturnAllFilms() throws Exception {
+
+        FilmService filmService =
+                Mockito.mock(FilmService.class);
+
+        AdminFilmController controller =
+                new AdminFilmController(filmService);
+
+        MockMvc mockMvc = MockMvcBuilders
+                .standaloneSetup(controller)
+                .build();
+
+        Film film1 = new Film();
+        film1.setIdFilm(1);
+        film1.setTitre("Interstellar");
+        film1.setDureeMinute(169);
+        film1.setAnneeSortie(2014);
+        film1.setGenre("Science-fiction");
+        film1.setRealisateur("Christopher Nolan");
+        film1.setSynopsis("Voyage spatial à travers un trou de ver.");
+        film1.setUrlAffiche("https://example.com/interstellar.jpg");
+
+        Film film2 = new Film();
+        film2.setIdFilm(2);
+        film2.setTitre("Inception");
+        film2.setDureeMinute(148);
+        film2.setAnneeSortie(2010);
+        film2.setGenre("Science-fiction");
+        film2.setRealisateur("Christopher Nolan");
+        film2.setSynopsis("Un voleur s'introduit dans les rêves.");
+        film2.setUrlAffiche("https://example.com/inception.jpg");
+
+        Mockito.when(filmService.getAllFilms())
+                .thenReturn(List.of(film1, film2));
+
+        mockMvc.perform(
+                        get("/api/admin/films")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].idFilm").value(1))
+                .andExpect(jsonPath("$[0].titre").value("Interstellar"))
+                .andExpect(jsonPath("$[1].idFilm").value(2))
+                .andExpect(jsonPath("$[1].titre").value("Inception"));
+
+        Mockito.verify(filmService)
+                .getAllFilms();
     }
 }

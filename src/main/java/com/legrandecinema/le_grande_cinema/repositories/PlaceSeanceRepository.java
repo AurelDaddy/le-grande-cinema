@@ -37,4 +37,6 @@ public interface PlaceSeanceRepository extends JpaRepository<PlaceSeance, Intege
 
     List<PlaceSeance> findBySeanceIdSeanceAndReservationIsNull(Integer idSeance, Pageable pageable);
 
+    void deleteBySeanceIdSeance(Integer idSeance);
+
 }
