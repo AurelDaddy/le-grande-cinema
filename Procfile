@@ -1,0 +1,1 @@
+web: java -jar target/le-grande-cinema-0.0.1-SNAPSHOT.war
