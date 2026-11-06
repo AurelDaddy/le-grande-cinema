@@ -13,8 +13,9 @@ public class SeanceMapper {
                 seance.getDateHeure(),
                 seance.getVersion(),
                 seance.getPrix(),
-                seance.getSalle().getIdSalle(),
-                seance.getFilm().getIdFilm()
+                seance.getFilm().getIdFilm(),
+                seance.getSalle().getIdSalle()
+
         );
     }
 }
