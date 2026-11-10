@@ -59,7 +59,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:4200"
+                "http://localhost:4200",
+                "https://le-grande-cinema-front.vercel.app"
         ));
 
         configuration.setAllowedMethods(List.of(
