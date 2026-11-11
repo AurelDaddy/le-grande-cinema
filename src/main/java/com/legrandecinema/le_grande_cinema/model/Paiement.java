@@ -21,7 +21,7 @@ public class Paiement {
 @Column(name = "id_paiement")
 private Integer idPaiement;
 
-@Column(name = "montant", nullable = false, precision = 5, scale = 2)
+@Column(name = "montant", nullable = false, precision = 10, scale = 2)
 private BigDecimal montant;
 
 @Column(name = "date_paiement", nullable = false)
