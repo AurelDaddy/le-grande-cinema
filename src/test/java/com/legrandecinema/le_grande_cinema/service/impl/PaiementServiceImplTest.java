@@ -190,4 +190,82 @@ public class PaiementServiceImplTest {
         Mockito.verify(reservationRepository, Mockito.never()).save(reservation);
 
     }
+
+
+    @Test
+    void shouldAcceptPaymentOver999Point99Euros() {
+
+        // ARRANGE : préparation des données de notre scénario
+
+        PaiementRepository paiementRepository =
+                Mockito.mock(PaiementRepository.class);
+
+        ReservationRepository reservationRepository =
+                Mockito.mock(ReservationRepository.class);
+
+        PaymentGateway paymentGateway =
+                Mockito.mock(PaymentGateway.class);
+
+        PaiementServiceImpl paiementService = new PaiementServiceImpl(
+                paiementRepository,
+                reservationRepository,
+                paymentGateway
+        );
+
+        // Une séance coûte 12,50 € par place
+        Seance seance = new Seance();
+        seance.setPrix(new BigDecimal("12.50"));
+
+        // Notre client souhaite réserver 100 places
+        List<PlaceSeance> places = new ArrayList<>();
+
+        for (int i = 0; i < 100; i++) {
+            PlaceSeance place = new PlaceSeance();
+            place.setSeance(seance);
+            places.add(place);
+        }
+
+        Utilisateur utilisateur = new Utilisateur();
+        utilisateur.setEmail("client@test.fr");
+
+        Reservation reservation = new Reservation();
+        reservation.setIdReservation(19);
+        reservation.setUtilisateur(utilisateur);
+        reservation.setSeance(seance);
+        reservation.setPlaceSeances(places);
+        reservation.setStatut(StatutReservation.EN_ATTENTE);
+
+        BigDecimal montantAttendu = new BigDecimal("1250.00");
+
+        // Simulation de la récupération de notre réservation
+        Mockito.when(reservationRepository.findById(19))
+                .thenReturn(Optional.of(reservation));
+
+        // Simulation de l'acceptation du paiement
+        Mockito.when(paymentGateway.payer(montantAttendu))
+                .thenReturn(StatutPaiement.ACCEPTE);
+
+        // Simulation de l'enregistrement du paiement
+        Mockito.when(paiementRepository.save(Mockito.any(Paiement.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // ACT : exécution de la méthode que nous souhaitons tester
+
+        Paiement paiement = paiementService.effectuerPaiement(
+                "client@test.fr",
+                19
+        );
+
+        // ASSERT : vérification des résultats obtenus
+
+        assertEquals(montantAttendu, paiement.getMontant());
+        assertEquals(StatutPaiement.ACCEPTE, paiement.getStatut());
+        assertEquals(StatutReservation.CONFIRMEE, reservation.getStatut());
+
+        // Vérification des interactions avec les dépendances
+        Mockito.verify(paymentGateway).payer(montantAttendu);
+        Mockito.verify(paiementRepository).save(paiement);
+        Mockito.verify(reservationRepository).save(reservation);
+    }
+
 }
