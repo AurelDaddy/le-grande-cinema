@@ -59,7 +59,7 @@ public class ReservationServiceImplTest {
         Mockito.when(utilisateurRepository.findByEmail("test@test.fr")
         ).thenReturn(Optional.of(utilisateur));
 
-        Mockito.when(seanceRepository.findById(1) // 1 id fictif de la séance nouvellement créée (mockée)
+        Mockito.when(seanceRepository.findByIdForUpdate(1) // 1 id fictif de la séance nouvellement créée (mockée)
         ).thenReturn(Optional.of(seance));
 
         Mockito.when(
@@ -129,7 +129,7 @@ public class ReservationServiceImplTest {
         Mockito.when(utilisateurRepository.findByEmail("test@test.fr")
         ).thenReturn(Optional.of(utilisateur));
 
-        Mockito.when(seanceRepository.findById(1) // 1 id fictif de la séance nouvellement créée
+        Mockito.when(seanceRepository.findByIdForUpdate(1) // 1 id fictif de la séance nouvellement créée
         ).thenReturn(Optional.of(seance));
 
         Mockito.when(
@@ -210,7 +210,7 @@ public class ReservationServiceImplTest {
         Mockito.when(utilisateurRepository.findByEmail("test@test.fr"))
                         .thenReturn(Optional.of(utilisateur));
 
-        Mockito.when(seanceRepository.findById(1)
+        Mockito.when(seanceRepository.findByIdForUpdate(1)
         ).thenReturn(Optional.of(seancePassee));
 
         //on vérifie que quand reservationService.createReservation est lancé, il envoie une exception car la séance est passée
