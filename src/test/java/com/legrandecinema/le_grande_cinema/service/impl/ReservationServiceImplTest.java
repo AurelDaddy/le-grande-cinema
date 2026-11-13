@@ -1,5 +1,6 @@
 package com.legrandecinema.le_grande_cinema.service.impl;
 
+import com.legrandecinema.le_grande_cinema.exception.RessourceIntrouvableException;
 import com.legrandecinema.le_grande_cinema.model.PlaceSeance;
 import com.legrandecinema.le_grande_cinema.model.Reservation;
 import com.legrandecinema.le_grande_cinema.model.Seance;
@@ -59,7 +60,7 @@ public class ReservationServiceImplTest {
         Mockito.when(utilisateurRepository.findByEmail("test@test.fr")
         ).thenReturn(Optional.of(utilisateur));
 
-        Mockito.when(seanceRepository.findById(1) // 1 id fictif de la séance nouvellement créée (mockée)
+        Mockito.when(seanceRepository.findByIdForUpdate(1) // 1 id fictif de la séance nouvellement créée (mockée)
         ).thenReturn(Optional.of(seance));
 
         Mockito.when(
@@ -129,7 +130,7 @@ public class ReservationServiceImplTest {
         Mockito.when(utilisateurRepository.findByEmail("test@test.fr")
         ).thenReturn(Optional.of(utilisateur));
 
-        Mockito.when(seanceRepository.findById(1) // 1 id fictif de la séance nouvellement créée
+        Mockito.when(seanceRepository.findByIdForUpdate(1) // 1 id fictif de la séance nouvellement créée
         ).thenReturn(Optional.of(seance));
 
         Mockito.when(
@@ -210,7 +211,7 @@ public class ReservationServiceImplTest {
         Mockito.when(utilisateurRepository.findByEmail("test@test.fr"))
                         .thenReturn(Optional.of(utilisateur));
 
-        Mockito.when(seanceRepository.findById(1)
+        Mockito.when(seanceRepository.findByIdForUpdate(1)
         ).thenReturn(Optional.of(seancePassee));
 
         //on vérifie que quand reservationService.createReservation est lancé, il envoie une exception car la séance est passée
@@ -223,4 +224,210 @@ public class ReservationServiceImplTest {
                 reservationRepository, Mockito.never()).save(Mockito.any(Reservation.class));
 
     }
+
+    @Test
+    void shouldGetReservationById() {
+
+        // création des repositories mockés
+        ReservationRepository reservationRepository =
+                Mockito.mock(ReservationRepository.class);
+
+        SeanceRepository seanceRepository =
+                Mockito.mock(SeanceRepository.class);
+
+        UtilisateurRepository utilisateurRepository =
+                Mockito.mock(UtilisateurRepository.class);
+
+        PlaceSeanceRepository placeSeanceRepository =
+                Mockito.mock(PlaceSeanceRepository.class);
+
+        ReservationServiceImpl reservationService = new ReservationServiceImpl(
+                reservationRepository,
+                seanceRepository,
+                utilisateurRepository,
+                placeSeanceRepository
+        );
+
+        Reservation reservation = new Reservation();
+
+        Mockito.when(reservationRepository.findById(1))
+                .thenReturn(Optional.of(reservation));
+
+        // appel de la méthode à tester
+        Optional<Reservation> resultat =
+                reservationService.getReservationById(1);
+
+        // vérification du résultat
+        assertEquals(Optional.of(reservation), resultat);
+
+        Mockito.verify(reservationRepository).findById(1);
+    }
+
+    @Test
+    void shouldGetConfirmedReservations() {
+
+        ReservationRepository reservationRepository =
+                Mockito.mock(ReservationRepository.class);
+
+        SeanceRepository seanceRepository =
+                Mockito.mock(SeanceRepository.class);
+
+        UtilisateurRepository utilisateurRepository =
+                Mockito.mock(UtilisateurRepository.class);
+
+        PlaceSeanceRepository placeSeanceRepository =
+                Mockito.mock(PlaceSeanceRepository.class);
+
+        ReservationServiceImpl reservationService = new ReservationServiceImpl(
+                reservationRepository,
+                seanceRepository,
+                utilisateurRepository,
+                placeSeanceRepository
+        );
+
+        Reservation reservation = new Reservation();
+        reservation.setStatut(StatutReservation.CONFIRMEE);
+
+        List<Reservation> reservations = List.of(reservation);
+
+        Mockito.when(reservationRepository.findByStatut(
+                StatutReservation.CONFIRMEE
+        )).thenReturn(reservations);
+
+        List<Reservation> resultat =
+                reservationService.getReservationsConfirmees();
+
+        assertEquals(1, resultat.size());
+        assertEquals(reservation, resultat.get(0));
+
+        Mockito.verify(reservationRepository)
+                .findByStatut(StatutReservation.CONFIRMEE);
+    }
+
+    @Test
+    void shouldGetReservationsBySeance() {
+
+        ReservationRepository reservationRepository =
+                Mockito.mock(ReservationRepository.class);
+
+        SeanceRepository seanceRepository =
+                Mockito.mock(SeanceRepository.class);
+
+        UtilisateurRepository utilisateurRepository =
+                Mockito.mock(UtilisateurRepository.class);
+
+        PlaceSeanceRepository placeSeanceRepository =
+                Mockito.mock(PlaceSeanceRepository.class);
+
+        ReservationServiceImpl reservationService = new ReservationServiceImpl(
+                reservationRepository,
+                seanceRepository,
+                utilisateurRepository,
+                placeSeanceRepository
+        );
+
+        Reservation reservation = new Reservation();
+        List<Reservation> reservations = List.of(reservation);
+
+        Mockito.when(reservationRepository.findBySeanceIdSeance(1))
+                .thenReturn(reservations);
+
+        // ACT
+        List<Reservation> resultat =
+                reservationService.getReservationsBySeance(1);
+
+        // ASSERT
+        assertEquals(1, resultat.size());
+        assertEquals(reservation, resultat.get(0));
+
+        Mockito.verify(reservationRepository)
+                .findBySeanceIdSeance(1);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUserDoesNotExist() {
+
+        // ARRANGE
+        ReservationRepository reservationRepository =
+                Mockito.mock(ReservationRepository.class);
+        SeanceRepository seanceRepository =
+                Mockito.mock(SeanceRepository.class);
+        UtilisateurRepository utilisateurRepository =
+                Mockito.mock(UtilisateurRepository.class);
+        PlaceSeanceRepository placeSeanceRepository =
+                Mockito.mock(PlaceSeanceRepository.class);
+
+        ReservationServiceImpl reservationService =
+                new ReservationServiceImpl(
+                        reservationRepository,
+                        seanceRepository,
+                        utilisateurRepository,
+                        placeSeanceRepository
+                );
+
+        // La séance existe
+        Seance seance = new Seance();
+        seance.setDateHeure(LocalDateTime.now().plusDays(1));
+
+        Mockito.when(seanceRepository.findByIdForUpdate(1))
+                .thenReturn(Optional.of(seance));
+
+        // Mais l'utilisateur n'existe pas
+        Mockito.when(utilisateurRepository.findByEmail("inconnu@test.fr"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                RessourceIntrouvableException.class,
+                () -> reservationService.createReservation(
+                        "inconnu@test.fr", 1, 1
+                )
+        );
+
+        // Aucune réservation ne doit être enregistrée
+        Mockito.verify(reservationRepository, Mockito.never())
+                .save(Mockito.any(Reservation.class));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenSeanceDoesNotExist() {
+
+        // ARRANGE
+        ReservationRepository reservationRepository =
+                Mockito.mock(ReservationRepository.class);
+        SeanceRepository seanceRepository =
+                Mockito.mock(SeanceRepository.class);
+        UtilisateurRepository utilisateurRepository =
+                Mockito.mock(UtilisateurRepository.class);
+        PlaceSeanceRepository placeSeanceRepository =
+                Mockito.mock(PlaceSeanceRepository.class);
+
+        ReservationServiceImpl reservationService =
+                new ReservationServiceImpl(
+                        reservationRepository,
+                        seanceRepository,
+                        utilisateurRepository,
+                        placeSeanceRepository
+                );
+
+        // La séance demandée n'existe pas
+        Mockito.when(seanceRepository.findByIdForUpdate(999))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                RessourceIntrouvableException.class,
+                () -> reservationService.createReservation(
+                        "client@test.fr", 999, 1
+                )
+        );
+
+        // Aucun utilisateur ne doit être recherché inutilement
+        Mockito.verifyNoInteractions(utilisateurRepository);
+
+        // Aucune réservation ne doit être enregistrée
+        Mockito.verify(reservationRepository, Mockito.never())
+                .save(Mockito.any(Reservation.class));
+    }
+
+
+
 }

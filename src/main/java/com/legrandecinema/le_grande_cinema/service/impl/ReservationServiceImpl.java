@@ -45,13 +45,24 @@ public class ReservationServiceImpl implements ReservationService {
             Integer idSeance,
             int nombrePlaces) {
 
-        //petite vérifiaction que le nombre de places demandé est bien supérieur à 0
-        if (nombrePlaces <= 0){
+        //petite vérification que le nombre de places demandé est bien supérieur à 0
+        if (nombrePlaces <= 0) {
             throw new IllegalArgumentException("Le nombre de places demandé doit être supérieur à 0");
         }
 
-        //Récupération de l'utilisateur, de la séance et du nombre de place à réserver
-        //disponible dans placeSeance
+
+        // Verrouillage de la séance avant de rechercher les places disponibles.
+        // Les réservations concurrentes pour cette séance devront attendre
+        // la fin de la transaction en cours.
+        Seance seance = seanceRepository
+                .findByIdForUpdate(idSeance)
+                .orElseThrow(() ->
+                        new RessourceIntrouvableException(
+                                "Séance introuvable"
+                        )
+                );
+
+        // Récupération de l'utilisateur après acquisition du verrou.
         Utilisateur utilisateur = utilisateurRepository
                 .findByEmail(email)
                 .orElseThrow(() ->
@@ -60,13 +71,6 @@ public class ReservationServiceImpl implements ReservationService {
                         )
                 );
 
-        Seance seance = seanceRepository
-                .findById(idSeance)
-                .orElseThrow(() ->
-                        new RessourceIntrouvableException(
-                                "Séance introuvable"
-                        )
-                );
 
         //verifier que la résservation ne se fasse pas sur une séance passée
         if (seance.getDateHeure().isBefore(LocalDateTime.now())) {
@@ -79,7 +83,7 @@ public class ReservationServiceImpl implements ReservationService {
                 PageRequest.of(0, nombrePlaces));
 
         //vérifie qu'il y ait assez de places disponibles
-        if (placesAReserver.size() <  nombrePlaces ){
+        if (placesAReserver.size() < nombrePlaces) {
             throw new IllegalStateException("Désolé il n'y pas assez de places disponibles");
         }
 
