@@ -10,7 +10,9 @@ import com.legrandecinema.le_grande_cinema.repositories.PlaceSeanceRepository;
 import com.legrandecinema.le_grande_cinema.repositories.ReservationRepository;
 import com.legrandecinema.le_grande_cinema.repositories.SeanceRepository;
 import com.legrandecinema.le_grande_cinema.repositories.UtilisateurRepository;
+import com.legrandecinema.le_grande_cinema.service.ReservationExpirationService;
 import com.legrandecinema.le_grande_cinema.service.ReservationService;
+import com.legrandecinema.le_grande_cinema.service.policy.ReservationExpirationPolicy;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -26,16 +28,20 @@ public class ReservationServiceImpl implements ReservationService {
     private final SeanceRepository seanceRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final PlaceSeanceRepository placeSeanceRepository;
+    private final ReservationExpirationService reservationExpirationService;
 
     public ReservationServiceImpl(
             ReservationRepository reservationRepository,
             SeanceRepository seanceRepository,
             UtilisateurRepository utilisateurRepository,
-            PlaceSeanceRepository placeSeanceRepository) {
+            PlaceSeanceRepository placeSeanceRepository,
+            ReservationExpirationService reservationExpirationService
+    ) {
         this.reservationRepository = reservationRepository;
         this.seanceRepository = seanceRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.placeSeanceRepository = placeSeanceRepository;
+        this.reservationExpirationService = reservationExpirationService;
     }
 
     @Transactional
@@ -76,6 +82,10 @@ public class ReservationServiceImpl implements ReservationService {
         if (seance.getDateHeure().isBefore(LocalDateTime.now())) {
             throw new IllegalStateException("La séance est passée. Elle n'est donc plus réservable");
         }
+
+        //libèration des places des réservations expirées avant
+        //de rechercher les places encore disponibles
+        reservationExpirationService.expirerReservationsDeLaSeance(idSeance);
 
         //vérifie que qu'il reste des placesSeances avec Reservation Null donc des places disponibles pour la Séance
         List<PlaceSeance> placesAReserver = placeSeanceRepository.findBySeanceIdSeanceAndReservationIsNull(
