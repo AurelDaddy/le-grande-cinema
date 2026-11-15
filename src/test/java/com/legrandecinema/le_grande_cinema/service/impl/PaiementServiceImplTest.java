@@ -6,10 +6,13 @@ import com.legrandecinema.le_grande_cinema.model.type.StatutReservation;
 import com.legrandecinema.le_grande_cinema.payment.PaymentGateway;
 import com.legrandecinema.le_grande_cinema.repositories.PaiementRepository;
 import com.legrandecinema.le_grande_cinema.repositories.ReservationRepository;
+import com.legrandecinema.le_grande_cinema.repositories.SeanceRepository;
+import com.legrandecinema.le_grande_cinema.service.policy.ReservationExpirationPolicy;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,10 +30,19 @@ public class PaiementServiceImplTest {
 
         PaymentGateway paymentGateway = Mockito.mock(PaymentGateway.class);
 
+        ReservationExpirationPolicy expirationPolicy = new ReservationExpirationPolicy(15);
+
+        SeanceRepository seanceRepository = Mockito.mock(SeanceRepository.class); {
+        }
+
+
+
         PaiementServiceImpl paiementService = new PaiementServiceImpl(
                 paiementRepository,
                 reservationRepository,
-                paymentGateway);
+                paymentGateway,
+                expirationPolicy,
+                seanceRepository);
 
         BigDecimal montant = BigDecimal.valueOf(20);
 
@@ -56,10 +68,19 @@ public class PaiementServiceImplTest {
         reservation.setPlaceSeances(placeSeances);
         reservation.setSeance(seance);
         reservation.setStatut(StatutReservation.EN_ATTENTE);
+        reservation.setDateReservation(LocalDateTime.now().minusMinutes(5));
         reservation.setUtilisateur(utilisateur);
 
-        Mockito.when(reservationRepository.findById(1))
+
+        Mockito.when(reservationRepository.findSeanceIdByReservationId(1))
+                .thenReturn(Optional.of(10));
+
+        Mockito.when(seanceRepository.findByIdForUpdate(10))
+                .thenReturn(Optional.of(new Seance()));
+
+        Mockito.when(reservationRepository.findByIdForUpdate(1))
                 .thenReturn(Optional.of(reservation));
+
 
 
         //On mock le paymentGateway on retournant le statut ACCEPTE
@@ -90,7 +111,15 @@ public class PaiementServiceImplTest {
         PaiementRepository paiementRepository = Mockito.mock(PaiementRepository.class);
         ReservationRepository reservationRepository = Mockito.mock(ReservationRepository.class);
         PaymentGateway paymentGateway = Mockito.mock(PaymentGateway.class);
-        PaiementServiceImpl paiementService = new PaiementServiceImpl(paiementRepository,reservationRepository,paymentGateway);
+        ReservationExpirationPolicy expirationPolicy = new ReservationExpirationPolicy(15);
+        SeanceRepository seanceRepository = Mockito.mock(SeanceRepository.class);
+
+        PaiementServiceImpl paiementService = new PaiementServiceImpl(
+                paiementRepository,
+                reservationRepository,
+                paymentGateway,
+                expirationPolicy,
+                seanceRepository);
 
         //on crée un utilisateur
         Utilisateur utilisateur = new Utilisateur();
@@ -100,10 +129,19 @@ public class PaiementServiceImplTest {
         Reservation reservation = new Reservation();
         reservation.setIdReservation(1);
         reservation.setStatut(StatutReservation.EN_ATTENTE);
+        reservation.setDateReservation(LocalDateTime.now().minusMinutes(5));
         reservation.setUtilisateur(utilisateur);
 
-        Mockito.when(reservationRepository.findById(1))
+
+        Mockito.when(reservationRepository.findSeanceIdByReservationId(1))
+                .thenReturn(Optional.of(10));
+
+        Mockito.when(seanceRepository.findByIdForUpdate(10))
+                .thenReturn(Optional.of(new Seance()));
+
+        Mockito.when(reservationRepository.findByIdForUpdate(1))
                 .thenReturn(Optional.of(reservation));
+
 
         assertThrows(
                 IllegalStateException.class,
@@ -129,10 +167,16 @@ public class PaiementServiceImplTest {
 
         PaymentGateway paymentGateway = Mockito.mock(PaymentGateway.class);
 
+        ReservationExpirationPolicy expirationPolicy = new ReservationExpirationPolicy(15);
+
+        SeanceRepository seanceRepository = Mockito.mock(SeanceRepository.class);
+
         PaiementServiceImpl paiementService = new PaiementServiceImpl(
                 paiementRepository,
                 reservationRepository,
-                paymentGateway);
+                paymentGateway,
+                expirationPolicy,
+                seanceRepository);
 
         BigDecimal montant = BigDecimal.valueOf(20);
 
@@ -158,11 +202,20 @@ public class PaiementServiceImplTest {
         reservation.setPlaceSeances(placeSeances);
         reservation.setSeance(seance);
         reservation.setStatut(StatutReservation.EN_ATTENTE);
+        reservation.setDateReservation(LocalDateTime.now().minusMinutes(5));
         reservation.setUtilisateur(utilisateur);
 
 
-        Mockito.when(reservationRepository.findById(1))
+
+        Mockito.when(reservationRepository.findSeanceIdByReservationId(1))
+                .thenReturn(Optional.of(10));
+
+        Mockito.when(seanceRepository.findByIdForUpdate(10))
+                .thenReturn(Optional.of(new Seance()));
+
+        Mockito.when(reservationRepository.findByIdForUpdate(1))
                 .thenReturn(Optional.of(reservation));
+
 
 
 
@@ -206,10 +259,16 @@ public class PaiementServiceImplTest {
         PaymentGateway paymentGateway =
                 Mockito.mock(PaymentGateway.class);
 
+        ReservationExpirationPolicy expirationPolicy = new ReservationExpirationPolicy(15);
+
+        SeanceRepository seanceRepository = Mockito.mock(SeanceRepository.class);
+
         PaiementServiceImpl paiementService = new PaiementServiceImpl(
                 paiementRepository,
                 reservationRepository,
-                paymentGateway
+                paymentGateway,
+                expirationPolicy,
+                seanceRepository
         );
 
         // Une séance coûte 12,50 € par place
@@ -234,12 +293,20 @@ public class PaiementServiceImplTest {
         reservation.setSeance(seance);
         reservation.setPlaceSeances(places);
         reservation.setStatut(StatutReservation.EN_ATTENTE);
+        reservation.setDateReservation(LocalDateTime.now().minusMinutes(5));
 
         BigDecimal montantAttendu = new BigDecimal("1250.00");
 
         // Simulation de la récupération de notre réservation
-        Mockito.when(reservationRepository.findById(19))
+        Mockito.when(reservationRepository.findSeanceIdByReservationId(19))
+                .thenReturn(Optional.of(10));
+
+        Mockito.when(seanceRepository.findByIdForUpdate(10))
+                .thenReturn(Optional.of(new Seance()));
+
+        Mockito.when(reservationRepository.findByIdForUpdate(19))
                 .thenReturn(Optional.of(reservation));
+
 
         // Simulation de l'acceptation du paiement
         Mockito.when(paymentGateway.payer(montantAttendu))
@@ -249,14 +316,14 @@ public class PaiementServiceImplTest {
         Mockito.when(paiementRepository.save(Mockito.any(Paiement.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        // ACT : exécution de la méthode que nous souhaitons tester
+        // Exécution de la méthode que nous souhaitons tester
 
         Paiement paiement = paiementService.effectuerPaiement(
                 "client@test.fr",
                 19
         );
 
-        // ASSERT : vérification des résultats obtenus
+        // Vérification des résultats obtenus
 
         assertEquals(montantAttendu, paiement.getMontant());
         assertEquals(StatutPaiement.ACCEPTE, paiement.getStatut());
@@ -267,5 +334,84 @@ public class PaiementServiceImplTest {
         Mockito.verify(paiementRepository).save(paiement);
         Mockito.verify(reservationRepository).save(reservation);
     }
+
+
+    @Test
+    void shouldRefusePaymentWhenReservationHasExpired() {
+
+        // Création des repositories mockés
+        PaiementRepository paiementRepository =
+                Mockito.mock(PaiementRepository.class);
+
+        ReservationRepository reservationRepository =
+                Mockito.mock(ReservationRepository.class);
+
+        PaymentGateway paymentGateway =
+                Mockito.mock(PaymentGateway.class);
+
+        ReservationExpirationPolicy expirationPolicy = new ReservationExpirationPolicy(15);
+
+        SeanceRepository seanceRepository = Mockito.mock(SeanceRepository.class);
+
+        PaiementServiceImpl paiementService =
+                new PaiementServiceImpl(
+                        paiementRepository,
+                        reservationRepository,
+                        paymentGateway,
+                        expirationPolicy,
+                        seanceRepository
+                );
+
+        // Création de l'utilisateur
+        Utilisateur utilisateur = new Utilisateur();
+        utilisateur.setEmail("client@test.fr");
+
+        // Création d'une séance à 12,50 €
+        Seance seance = new Seance();
+        seance.setPrix(new BigDecimal("12.50"));
+
+        // Une place est associée à la réservation
+        PlaceSeance place = new PlaceSeance();
+
+        // Réservation créée il y a 30 minutes
+        Reservation reservation = new Reservation();
+        reservation.setIdReservation(1);
+        reservation.setUtilisateur(utilisateur);
+        reservation.setSeance(seance);
+        reservation.setPlaceSeances(List.of(place));
+        reservation.setStatut(StatutReservation.EN_ATTENTE);
+        reservation.setDateReservation(
+                LocalDateTime.now().minusMinutes(30)
+        );
+
+        // Le repository retrouve cette réservation
+
+        Mockito.when(reservationRepository.findSeanceIdByReservationId(1))
+                .thenReturn(Optional.of(10));
+
+        Mockito.when(seanceRepository.findByIdForUpdate(10))
+                .thenReturn(Optional.of(new Seance()));
+
+        Mockito.when(reservationRepository.findByIdForUpdate(1))
+                .thenReturn(Optional.of(reservation));
+
+
+        // Le paiement doit être refusé
+        assertThrows(
+                IllegalStateException.class,
+                () -> paiementService.effectuerPaiement(
+                        "client@test.fr",
+                        1
+                )
+        );
+
+        // Le système ne doit jamais contacter le prestataire de paiement
+        Mockito.verifyNoInteractions(paymentGateway);
+
+        // Aucun paiement ne doit être enregistré
+        Mockito.verify(paiementRepository, Mockito.never())
+                .save(Mockito.any(Paiement.class));
+    }
+
 
 }

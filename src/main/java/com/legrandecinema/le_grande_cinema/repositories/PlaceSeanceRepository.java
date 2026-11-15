@@ -39,4 +39,6 @@ public interface PlaceSeanceRepository extends JpaRepository<PlaceSeance, Intege
 
     void deleteBySeanceIdSeance(Integer idSeance);
 
+    //recherche les places associées à une réservation précise
+    List<PlaceSeance> findByReservationIdReservation(Integer idReservation);
 }
