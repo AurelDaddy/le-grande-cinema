@@ -10,6 +10,7 @@ import com.legrandecinema.le_grande_cinema.repositories.PlaceSeanceRepository;
 import com.legrandecinema.le_grande_cinema.repositories.ReservationRepository;
 import com.legrandecinema.le_grande_cinema.repositories.SeanceRepository;
 import com.legrandecinema.le_grande_cinema.repositories.UtilisateurRepository;
+import com.legrandecinema.le_grande_cinema.service.ReservationExpirationService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.data.domain.Pageable;
@@ -34,12 +35,16 @@ public class ReservationServiceImplTest {
 
         PlaceSeanceRepository placeSeanceRepository = Mockito.mock(PlaceSeanceRepository.class);
 
+        ReservationExpirationService reservationExpirationService =
+                Mockito.mock(ReservationExpirationService.class);
+
         //On construit ReservationService
         ReservationServiceImpl reservationService = new ReservationServiceImpl(
                 reservationRepository,
                 seanceRepository,
                 utilisateurRepository,
-                placeSeanceRepository);
+                placeSeanceRepository,
+                reservationExpirationService);
 
 
         //On crée un utilisateur
@@ -107,12 +112,16 @@ public class ReservationServiceImplTest {
 
         PlaceSeanceRepository placeSeanceRepository = Mockito.mock(PlaceSeanceRepository.class);
 
+        ReservationExpirationService reservationExpirationService =
+                Mockito.mock(ReservationExpirationService.class);
+
 
         ReservationServiceImpl reservationService = new ReservationServiceImpl(
                 reservationRepository,
                 seanceRepository,
                 utilisateurRepository,
-                placeSeanceRepository);
+                placeSeanceRepository,
+                reservationExpirationService);
 
 
         Utilisateur utilisateur = new Utilisateur();
@@ -166,12 +175,16 @@ public class ReservationServiceImplTest {
 
         PlaceSeanceRepository placeSeanceRepository = Mockito.mock(PlaceSeanceRepository.class);
 
+        ReservationExpirationService reservationExpirationService =
+                Mockito.mock(ReservationExpirationService.class);
+
 
         ReservationServiceImpl reservationService = new ReservationServiceImpl(
                 reservationRepository,
                 seanceRepository,
                 utilisateurRepository,
-                placeSeanceRepository);
+                placeSeanceRepository,
+                reservationExpirationService);
 
         //on vérifie que quand reservationService.createReservation est lancé, il envoie une exception car aucune place n'est demandée
         assertThrows(
@@ -197,12 +210,16 @@ public class ReservationServiceImplTest {
 
         PlaceSeanceRepository placeSeanceRepository = Mockito.mock(PlaceSeanceRepository.class);
 
+        ReservationExpirationService reservationExpirationService =
+                Mockito.mock(ReservationExpirationService.class);
+
 
         ReservationServiceImpl reservationService = new ReservationServiceImpl(
                 reservationRepository,
                 seanceRepository,
                 utilisateurRepository,
-                placeSeanceRepository);
+                placeSeanceRepository,
+                reservationExpirationService);
 
         Utilisateur utilisateur = new Utilisateur();
         Seance seancePassee = new Seance();
@@ -241,11 +258,15 @@ public class ReservationServiceImplTest {
         PlaceSeanceRepository placeSeanceRepository =
                 Mockito.mock(PlaceSeanceRepository.class);
 
+        ReservationExpirationService reservationExpirationService =
+                Mockito.mock(ReservationExpirationService.class);
+
         ReservationServiceImpl reservationService = new ReservationServiceImpl(
                 reservationRepository,
                 seanceRepository,
                 utilisateurRepository,
-                placeSeanceRepository
+                placeSeanceRepository,
+                reservationExpirationService
         );
 
         Reservation reservation = new Reservation();
@@ -278,11 +299,15 @@ public class ReservationServiceImplTest {
         PlaceSeanceRepository placeSeanceRepository =
                 Mockito.mock(PlaceSeanceRepository.class);
 
+        ReservationExpirationService reservationExpirationService =
+                Mockito.mock(ReservationExpirationService.class);
+
         ReservationServiceImpl reservationService = new ReservationServiceImpl(
                 reservationRepository,
                 seanceRepository,
                 utilisateurRepository,
-                placeSeanceRepository
+                placeSeanceRepository,
+                reservationExpirationService
         );
 
         Reservation reservation = new Reservation();
@@ -319,11 +344,15 @@ public class ReservationServiceImplTest {
         PlaceSeanceRepository placeSeanceRepository =
                 Mockito.mock(PlaceSeanceRepository.class);
 
+        ReservationExpirationService reservationExpirationService =
+                Mockito.mock(ReservationExpirationService.class);
+
         ReservationServiceImpl reservationService = new ReservationServiceImpl(
                 reservationRepository,
                 seanceRepository,
                 utilisateurRepository,
-                placeSeanceRepository
+                placeSeanceRepository,
+                reservationExpirationService
         );
 
         Reservation reservation = new Reservation();
@@ -350,19 +379,26 @@ public class ReservationServiceImplTest {
         // ARRANGE
         ReservationRepository reservationRepository =
                 Mockito.mock(ReservationRepository.class);
+
         SeanceRepository seanceRepository =
                 Mockito.mock(SeanceRepository.class);
+
         UtilisateurRepository utilisateurRepository =
                 Mockito.mock(UtilisateurRepository.class);
+
         PlaceSeanceRepository placeSeanceRepository =
                 Mockito.mock(PlaceSeanceRepository.class);
+
+        ReservationExpirationService reservationExpirationService =
+                Mockito.mock(ReservationExpirationService.class);
 
         ReservationServiceImpl reservationService =
                 new ReservationServiceImpl(
                         reservationRepository,
                         seanceRepository,
                         utilisateurRepository,
-                        placeSeanceRepository
+                        placeSeanceRepository,
+                        reservationExpirationService
                 );
 
         // La séance existe
@@ -394,19 +430,26 @@ public class ReservationServiceImplTest {
         // ARRANGE
         ReservationRepository reservationRepository =
                 Mockito.mock(ReservationRepository.class);
+
         SeanceRepository seanceRepository =
                 Mockito.mock(SeanceRepository.class);
+
         UtilisateurRepository utilisateurRepository =
                 Mockito.mock(UtilisateurRepository.class);
+
         PlaceSeanceRepository placeSeanceRepository =
                 Mockito.mock(PlaceSeanceRepository.class);
+
+        ReservationExpirationService reservationExpirationService =
+                Mockito.mock(ReservationExpirationService.class);
 
         ReservationServiceImpl reservationService =
                 new ReservationServiceImpl(
                         reservationRepository,
                         seanceRepository,
                         utilisateurRepository,
-                        placeSeanceRepository
+                        placeSeanceRepository,
+                        reservationExpirationService
                 );
 
         // La séance demandée n'existe pas
